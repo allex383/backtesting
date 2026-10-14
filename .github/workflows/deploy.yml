@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - master
+      - 'основной'
   workflow_dispatch:
 
 permissions:
