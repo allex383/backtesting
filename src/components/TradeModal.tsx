@@ -290,14 +290,14 @@ export const TradeModal: React.FC<TradeModalProps> = ({
                 </label>
                 <div className="flex items-center gap-2">
                   <input
-                    type="number"
-                    step="0.1"
+                    type="text"
+                    inputMode="decimal"
                     value={resultRInput}
                     onChange={(e) => {
-                      const str = e.target.value;
-                      setResultRInput(str);
-                      if (str !== '' && str !== '-') {
-                        const val = parseFloat(str);
+                      const raw = e.target.value.replace(',', '.').replace(/[^0-9.-]/g, '');
+                      setResultRInput(raw);
+                      if (raw !== '' && raw !== '-' && raw !== '.') {
+                        const val = parseFloat(raw);
                         if (!isNaN(val)) {
                           if (val > 0) setOutcome('WIN');
                           else if (val < 0) setOutcome('LOSS');
@@ -339,10 +339,13 @@ export const TradeModal: React.FC<TradeModalProps> = ({
                   Запланированный Risk/Reward (RR):
                 </label>
                 <input
-                  type="number"
-                  step="0.1"
+                  type="text"
+                  inputMode="decimal"
                   value={plannedRRInput}
-                  onChange={(e) => setPlannedRRInput(e.target.value)}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(',', '.').replace(/[^0-9.]/g, '');
+                    setPlannedRRInput(raw);
+                  }}
                   placeholder="3.0"
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm font-mono text-white focus:outline-none focus:border-emerald-500 tabular-nums"
                 />
@@ -493,10 +496,10 @@ export const TradeModal: React.FC<TradeModalProps> = ({
               <div>
                 <label className="block text-[10px] text-slate-500 mb-0.5">Вход ($):</label>
                 <input
-                  type="number"
-                  step="any"
+                  type="text"
+                  inputMode="decimal"
                   value={entryPrice}
-                  onChange={(e) => setEntryPrice(e.target.value)}
+                  onChange={(e) => setEntryPrice(e.target.value.replace(',', '.'))}
                   placeholder="130.50"
                   className="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1 text-xs font-mono text-white focus:outline-none"
                 />
@@ -504,10 +507,10 @@ export const TradeModal: React.FC<TradeModalProps> = ({
               <div>
                 <label className="block text-[10px] text-slate-500 mb-0.5">Стоп-лосс ($):</label>
                 <input
-                  type="number"
-                  step="any"
+                  type="text"
+                  inputMode="decimal"
                   value={stopLossPrice}
-                  onChange={(e) => setStopLossPrice(e.target.value)}
+                  onChange={(e) => setStopLossPrice(e.target.value.replace(',', '.'))}
                   placeholder="129.20"
                   className="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1 text-xs font-mono text-rose-400 focus:outline-none"
                 />
@@ -515,10 +518,10 @@ export const TradeModal: React.FC<TradeModalProps> = ({
               <div>
                 <label className="block text-[10px] text-slate-500 mb-0.5">Тейк-профит ($):</label>
                 <input
-                  type="number"
-                  step="any"
+                  type="text"
+                  inputMode="decimal"
                   value={takeProfitPrice}
-                  onChange={(e) => setTakeProfitPrice(e.target.value)}
+                  onChange={(e) => setTakeProfitPrice(e.target.value.replace(',', '.'))}
                   placeholder="134.40"
                   className="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1 text-xs font-mono text-emerald-400 focus:outline-none"
                 />
@@ -526,10 +529,10 @@ export const TradeModal: React.FC<TradeModalProps> = ({
               <div>
                 <label className="block text-[10px] text-slate-500 mb-0.5">Факт выхода ($):</label>
                 <input
-                  type="number"
-                  step="any"
+                  type="text"
+                  inputMode="decimal"
                   value={exitPrice}
-                  onChange={(e) => setExitPrice(e.target.value)}
+                  onChange={(e) => setExitPrice(e.target.value.replace(',', '.'))}
                   placeholder="134.30"
                   className="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1 text-xs font-mono text-white focus:outline-none"
                 />
