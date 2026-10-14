@@ -1,0 +1,6 @@
+{
+  "name": "AlphaJournal: Backtest & Prop Diary",
+  "description": "Профессиональный дневник бэктеста торговых стратегий (начиная с 2020 г., учет риска в -1R) и раздельного ведения Проп-счетов.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
