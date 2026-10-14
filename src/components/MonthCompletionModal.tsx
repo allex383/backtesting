@@ -22,7 +22,7 @@ export const MonthCompletionModal: React.FC<MonthCompletionModalProps> = ({
   onSaveReviewAndAdvance,
 }) => {
   const [notes, setNotes] = useState(currentReview?.summaryNotes || '');
-  const [targetR, setTargetR] = useState<number>(currentReview?.targetR || 10);
+  const [targetRInput, setTargetRInput] = useState<string>(currentReview?.targetR?.toString() || '10');
 
   if (!isOpen) return null;
 
@@ -66,7 +66,7 @@ export const MonthCompletionModal: React.FC<MonthCompletionModalProps> = ({
       isCompleted: true,
       completedAt: new Date().toISOString(),
       summaryNotes: notes,
-      targetR,
+      targetR: parseFloat(targetRInput) || 0,
     };
 
     onSaveReviewAndAdvance(review, true);
@@ -78,7 +78,7 @@ export const MonthCompletionModal: React.FC<MonthCompletionModalProps> = ({
       monthKey,
       isCompleted: currentReview?.isCompleted || false,
       summaryNotes: notes,
-      targetR,
+      targetR: parseFloat(targetRInput) || 0,
     };
     onSaveReviewAndAdvance(review, false);
     onClose();
@@ -157,8 +157,9 @@ export const MonthCompletionModal: React.FC<MonthCompletionModalProps> = ({
               <input
                 type="number"
                 step="1"
-                value={targetR}
-                onChange={(e) => setTargetR(parseFloat(e.target.value) || 0)}
+                value={targetRInput}
+                onChange={(e) => setTargetRInput(e.target.value)}
+                placeholder="10"
                 className="w-18 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-right text-xs font-mono text-white focus:outline-none focus:border-emerald-500"
               />
               <span className="text-xs text-slate-400 font-mono">R</span>

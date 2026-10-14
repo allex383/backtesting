@@ -28,8 +28,8 @@ export const TradeModal: React.FC<TradeModalProps> = ({
   const [direction, setDirection] = useState<TradeDirection>('LONG');
   
   // R Multiple mechanics: -1.00R stop loss
-  const [resultR, setResultR] = useState<number>(-1.0);
-  const [plannedRR, setPlannedRR] = useState<number>(3.0);
+  const [resultRInput, setResultRInput] = useState<string>('-1');
+  const [plannedRRInput, setPlannedRRInput] = useState<string>('3');
   const [outcome, setOutcome] = useState<TradeOutcome>('LOSS');
 
   // Prices (optional)
@@ -56,8 +56,8 @@ export const TradeModal: React.FC<TradeModalProps> = ({
       setTime(initialTrade.time || '10:00');
       setSymbol(initialTrade.symbol);
       setDirection(initialTrade.direction);
-      setResultR(initialTrade.resultR);
-      setPlannedRR(initialTrade.plannedRR);
+      setResultRInput(initialTrade.resultR.toString());
+      setPlannedRRInput(initialTrade.plannedRR.toString());
       setOutcome(initialTrade.outcome);
       setEntryPrice(initialTrade.entryPrice?.toString() || '');
       setStopLossPrice(initialTrade.stopLossPrice?.toString() || '');
@@ -76,8 +76,8 @@ export const TradeModal: React.FC<TradeModalProps> = ({
       setTime('10:00');
       setSymbol('ETHUSDT');
       setDirection('LONG');
-      setResultR(-1.0);
-      setPlannedRR(3.0);
+      setResultRInput('-1');
+      setPlannedRRInput('3');
       setOutcome('LOSS');
       setEntryPrice('');
       setStopLossPrice('');
@@ -98,8 +98,10 @@ export const TradeModal: React.FC<TradeModalProps> = ({
   // Handle Quick Outcome selection
   const handleSelectOutcomePreset = (type: 'LOSS' | 'BE' | 'WIN', rVal: number) => {
     setOutcome(type);
-    setResultR(rVal);
+    setResultRInput(rVal.toString());
   };
+
+  const currentResultR = isNaN(parseFloat(resultRInput)) ? 0 : parseFloat(resultRInput);
 
   // Image Paste Handler (Ctrl+V)
   const handlePaste = (e: React.ClipboardEvent) => {
@@ -141,6 +143,11 @@ export const TradeModal: React.FC<TradeModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    const parsedR = parseFloat(resultRInput);
+    const finalResultR = isNaN(parsedR) ? 0 : parsedR;
+    const parsedRR = parseFloat(plannedRRInput);
+    const finalPlannedRR = isNaN(parsedRR) ? 3.0 : parsedRR;
+
     const trade: BacktestTrade = {
       id: initialTrade?.id || `bt-${Date.now()}`,
       date,
@@ -148,8 +155,8 @@ export const TradeModal: React.FC<TradeModalProps> = ({
       symbol: symbol.toUpperCase().trim(),
       direction,
       riskR: 1.0,
-      resultR: Number(resultR),
-      plannedRR: Number(plannedRR) || 3.0,
+      resultR: finalResultR,
+      plannedRR: finalPlannedRR,
       outcome,
       entryPrice: entryPrice ? parseFloat(entryPrice) : undefined,
       stopLossPrice: stopLossPrice ? parseFloat(stopLossPrice) : undefined,
@@ -208,14 +215,14 @@ export const TradeModal: React.FC<TradeModalProps> = ({
                 <span className="text-slate-500">Итог позиции:</span>
                 <span
                   className={`font-bold px-2 py-0.5 rounded tabular-nums ${
-                    resultR > 0
+                    currentResultR > 0
                       ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                      : resultR < 0
+                      : currentResultR < 0
                       ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
                       : 'bg-slate-800 text-slate-300'
                   }`}
                 >
-                  {resultR > 0 ? `+${resultR.toFixed(2)} R` : `${resultR.toFixed(2)} R`}
+                  {currentResultR > 0 ? `+${currentResultR.toFixed(2)} R` : `${currentResultR.toFixed(2)} R`}
                 </span>
               </div>
             </div>
@@ -226,7 +233,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
                 type="button"
                 onClick={() => handleSelectOutcomePreset('LOSS', -1.0)}
                 className={`py-2 px-3 text-xs font-bold rounded-lg border transition-all text-center flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
-                  resultR === -1.0 && outcome === 'LOSS'
+                  (resultRInput === '-1' || resultRInput === '-1.0' || resultRInput === '-1.00') && outcome === 'LOSS'
                     ? 'bg-rose-600 text-white border-rose-500 shadow-sm'
                     : 'bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/20'
                 }`}
@@ -239,7 +246,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
                 type="button"
                 onClick={() => handleSelectOutcomePreset('BE', 0.0)}
                 className={`py-2 px-3 text-xs font-semibold rounded-lg border transition-all text-center flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
-                  resultR === 0.0
+                  (resultRInput === '0' || resultRInput === '0.0')
                     ? 'bg-slate-700 text-white border-slate-600'
                     : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:bg-slate-800'
                 }`}
@@ -252,7 +259,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
                 type="button"
                 onClick={() => handleSelectOutcomePreset('WIN', 2.0)}
                 className={`py-2 px-3 text-xs font-bold rounded-lg border transition-all text-center flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
-                  resultR === 2.0
+                  (resultRInput === '2' || resultRInput === '2.0')
                     ? 'bg-emerald-600 text-white border-emerald-500 shadow-sm'
                     : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
                 }`}
@@ -265,7 +272,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
                 type="button"
                 onClick={() => handleSelectOutcomePreset('WIN', 3.0)}
                 className={`py-2 px-3 text-xs font-bold rounded-lg border transition-all text-center flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
-                  resultR === 3.0
+                  (resultRInput === '3' || resultRInput === '3.0')
                     ? 'bg-emerald-600 text-white border-emerald-500 shadow-sm'
                     : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
                 }`}
@@ -285,14 +292,20 @@ export const TradeModal: React.FC<TradeModalProps> = ({
                   <input
                     type="number"
                     step="0.1"
-                    value={resultR}
+                    value={resultRInput}
                     onChange={(e) => {
-                      const val = parseFloat(e.target.value) || 0;
-                      setResultR(val);
-                      if (val > 0) setOutcome('WIN');
-                      else if (val < 0) setOutcome('LOSS');
-                      else setOutcome('BE');
+                      const str = e.target.value;
+                      setResultRInput(str);
+                      if (str !== '' && str !== '-') {
+                        const val = parseFloat(str);
+                        if (!isNaN(val)) {
+                          if (val > 0) setOutcome('WIN');
+                          else if (val < 0) setOutcome('LOSS');
+                          else setOutcome('BE');
+                        }
+                      }
                     }}
+                    placeholder="Например: 2.5 или -1"
                     className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm font-mono text-white focus:outline-none focus:border-emerald-500 tabular-nums"
                   />
                   <div className="flex gap-1">
@@ -328,8 +341,8 @@ export const TradeModal: React.FC<TradeModalProps> = ({
                 <input
                   type="number"
                   step="0.1"
-                  value={plannedRR}
-                  onChange={(e) => setPlannedRR(parseFloat(e.target.value) || 0)}
+                  value={plannedRRInput}
+                  onChange={(e) => setPlannedRRInput(e.target.value)}
                   placeholder="3.0"
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm font-mono text-white focus:outline-none focus:border-emerald-500 tabular-nums"
                 />
@@ -632,8 +645,8 @@ export const TradeModal: React.FC<TradeModalProps> = ({
         {/* Footer */}
         <div className="flex items-center justify-between px-6 py-4 bg-slate-950/80 border-t border-slate-800">
           <div className="text-xs text-slate-400 font-mono">
-            Результат: <strong className={resultR > 0 ? 'text-emerald-400' : resultR < 0 ? 'text-rose-400' : 'text-slate-200'}>
-              {resultR > 0 ? `+${resultR} R` : `${resultR} R`}
+            Результат: <strong className={currentResultR > 0 ? 'text-emerald-400' : currentResultR < 0 ? 'text-rose-400' : 'text-slate-200'}>
+              {currentResultR > 0 ? `+${currentResultR.toFixed(2)} R` : `${currentResultR.toFixed(2)} R`}
             </strong>
           </div>
 
