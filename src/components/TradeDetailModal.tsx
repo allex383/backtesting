@@ -1,6 +1,7 @@
-import React from 'react';
-import { X, Edit3, Trash2, Calendar, Clock, Compass, Layers, ExternalLink, CheckCircle, AlertTriangle } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Edit3, Trash2, Calendar, Clock, Compass, Layers, ExternalLink, CheckCircle, AlertTriangle, ZoomIn } from 'lucide-react';
 import { BacktestTrade } from '../types';
+import { ImageViewerModal } from './ImageViewerModal';
 
 interface TradeDetailModalProps {
   trade: BacktestTrade | null;
@@ -15,6 +16,8 @@ export const TradeDetailModal: React.FC<TradeDetailModalProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const [isZoomOpen, setIsZoomOpen] = useState(false);
+
   if (!trade) return null;
 
   return (
@@ -82,22 +85,52 @@ export const TradeDetailModal: React.FC<TradeDetailModalProps> = ({
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Screenshot / Chart Area */}
           {trade.chartUrl ? (
-            <div className="rounded-xl border border-slate-800 bg-slate-950 overflow-hidden relative group">
-              <img
-                src={trade.chartUrl}
-                alt="Trade chart"
-                className="w-full h-auto max-h-[460px] object-contain mx-auto"
-              />
-              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                <a
-                  href={trade.chartUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-3 py-1.5 bg-slate-900/90 text-white text-xs rounded-lg border border-slate-700 flex items-center gap-1.5 shadow-lg hover:bg-slate-800"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Открыть оригинал</span>
-                </a>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                  <ZoomIn className="w-4 h-4 text-emerald-400" />
+                  <span>Скриншот графика / Разметка сделки</span>
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsZoomOpen(true)}
+                    className="px-3 py-1 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 text-xs font-medium rounded-lg border border-emerald-500/30 flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <ZoomIn className="w-3.5 h-3.5" />
+                    <span>Увеличить на весь экран</span>
+                  </button>
+                  {!trade.chartUrl.startsWith('data:') && (
+                    <a
+                      href={trade.chartUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-lg border border-slate-700 flex items-center gap-1 transition-colors"
+                      title="Открыть ссылку в новой вкладке"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">TradingView</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              <div
+                onClick={() => setIsZoomOpen(true)}
+                className="rounded-xl border border-slate-800 hover:border-slate-700 bg-slate-950 overflow-hidden relative group cursor-zoom-in transition-all"
+                title="Нажмите для увеличения графика"
+              >
+                <img
+                  src={trade.chartUrl}
+                  alt="Trade chart"
+                  className="w-full h-auto max-h-[460px] object-contain mx-auto transition-transform duration-200 group-hover:scale-[1.01]"
+                />
+                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                  <span className="px-4 py-2 bg-slate-900/95 text-white text-xs font-semibold rounded-xl border border-emerald-500/40 flex items-center gap-2 shadow-2xl backdrop-blur-md">
+                    <ZoomIn className="w-4 h-4 text-emerald-400" />
+                    <span>Нажмите для подробного рассмотрения (зум, панорамирование)</span>
+                  </span>
+                </div>
               </div>
             </div>
           ) : (
@@ -202,12 +235,22 @@ export const TradeDetailModal: React.FC<TradeDetailModalProps> = ({
         <div className="flex items-center justify-end px-6 py-3 bg-slate-950/80 border-t border-slate-800">
           <button
             onClick={onClose}
-            className="text-xs px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors"
+            className="text-xs px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors cursor-pointer"
           >
             Закрыть
           </button>
         </div>
       </div>
+
+      {/* Full-screen Zoom Modal */}
+      {trade.chartUrl && (
+        <ImageViewerModal
+          isOpen={isZoomOpen}
+          onClose={() => setIsZoomOpen(false)}
+          imageUrl={trade.chartUrl}
+          title={`${trade.symbol} · ${trade.date} ${trade.time || ''} (${trade.direction})`}
+        />
+      )}
     </div>
   );
 };

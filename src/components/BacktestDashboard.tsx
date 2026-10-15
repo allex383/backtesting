@@ -17,9 +17,11 @@ import {
   Trash2,
   Image as ImageIcon,
   CheckCircle2,
-  ChevronDown
+  ChevronDown,
+  ZoomIn
 } from 'lucide-react';
 import { exportBacktestToCsv } from '../utils/storage';
+import { ImageViewerModal } from './ImageViewerModal';
 
 interface BacktestDashboardProps {
   trades: BacktestTrade[];
@@ -49,6 +51,7 @@ export const BacktestDashboard: React.FC<BacktestDashboardProps> = ({
   const [directionFilter, setDirectionFilter] = useState<'ALL' | 'LONG' | 'SHORT'>('ALL');
   const [outcomeFilter, setOutcomeFilter] = useState<'ALL' | 'WIN' | 'LOSS' | 'BE'>('ALL');
   const [showEquityCurve, setShowEquityCurve] = useState(true);
+  const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
 
   // Filter trades based on Month and controls
   const filteredTrades = useMemo(() => {
@@ -410,15 +413,30 @@ export const BacktestDashboard: React.FC<BacktestDashboardProps> = ({
                       </td>
 
                       {/* Screenshot thumbnail */}
-                      <td className="py-3 px-3 text-center">
+                      <td className="py-3 px-3 text-center" onClick={(e) => e.stopPropagation()}>
                         {trade.chartUrl ? (
-                          <div className="w-8 h-8 rounded bg-slate-800 overflow-hidden mx-auto border border-slate-700">
-                            <img
-                              src={trade.chartUrl}
-                              alt="chart thumb"
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setPreviewImage({
+                                url: trade.chartUrl!,
+                                title: `${trade.symbol} · ${trade.date} ${trade.time || ''} (${trade.direction}) — ${trade.setup || 'Сделка'}`,
+                              })
+                            }
+                            className="relative group block mx-auto cursor-zoom-in focus:outline-none"
+                            title="Нажмите, чтобы увеличить и рассмотреть график"
+                          >
+                            <div className="w-9 h-9 rounded-lg bg-slate-800 overflow-hidden mx-auto border border-slate-700 group-hover:border-emerald-500 transition-all shadow-xs relative">
+                              <img
+                                src={trade.chartUrl}
+                                alt="chart thumb"
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
+                              />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <ZoomIn className="w-4 h-4 text-emerald-400" />
+                              </div>
+                            </div>
+                          </button>
                         ) : (
                           <span className="text-slate-700 text-xs">—</span>
                         )}
@@ -475,6 +493,16 @@ export const BacktestDashboard: React.FC<BacktestDashboardProps> = ({
           </div>
         )}
       </div>
+
+      {/* Full-screen Zoom Modal for Chart Previews */}
+      {previewImage && (
+        <ImageViewerModal
+          isOpen={!!previewImage}
+          onClose={() => setPreviewImage(null)}
+          imageUrl={previewImage.url}
+          title={previewImage.title}
+        />
+      )}
     </div>
   );
 };

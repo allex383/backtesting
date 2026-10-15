@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Image as ImageIcon, Check, AlertTriangle, Upload, Trash2 } from 'lucide-react';
+import { X, Image as ImageIcon, Check, AlertTriangle, Upload, Trash2, ZoomIn } from 'lucide-react';
 import { BacktestTrade, TradeDirection, TradeOutcome, SessionName } from '../types';
 import { TIMEFRAMES, SESSIONS, MISTAKE_TAGS } from '../data/sampleData';
+import { ImageViewerModal } from './ImageViewerModal';
 
 interface TradeModalProps {
   isOpen: boolean;
@@ -48,6 +49,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
   // Screenshots & Notes
   const [chartUrl, setChartUrl] = useState('');
   const [notes, setNotes] = useState('');
+  const [isPreviewZoomOpen, setIsPreviewZoomOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -620,12 +622,22 @@ export const TradeModal: React.FC<TradeModalProps> = ({
             </div>
 
             {chartUrl && (
-              <div className="mt-2 rounded-lg border border-slate-800 overflow-hidden bg-slate-950 max-h-48 flex items-center justify-center">
+              <div
+                onClick={() => setIsPreviewZoomOpen(true)}
+                className="mt-2 rounded-lg border border-slate-800 overflow-hidden bg-slate-950 max-h-48 flex items-center justify-center relative group cursor-zoom-in"
+                title="Нажмите, чтобы увеличить график"
+              >
                 <img
                   src={chartUrl}
                   alt="Chart snapshot"
-                  className="max-h-48 object-contain w-auto"
+                  className="max-h-48 object-contain w-auto transition-transform group-hover:scale-[1.02]"
                 />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                  <span className="px-3 py-1 bg-slate-900/90 text-white text-xs font-semibold rounded-lg border border-slate-700 flex items-center gap-1.5 shadow-xl">
+                    <ZoomIn className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Увеличить скриншот</span>
+                  </span>
+                </div>
               </div>
             )}
           </div>
@@ -672,6 +684,16 @@ export const TradeModal: React.FC<TradeModalProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Full-screen Zoom Modal for Preview */}
+      {chartUrl && (
+        <ImageViewerModal
+          isOpen={isPreviewZoomOpen}
+          onClose={() => setIsPreviewZoomOpen(false)}
+          imageUrl={chartUrl}
+          title={`Предпросмотр графика · ${symbol} (${direction})`}
+        />
+      )}
     </div>
   );
 };
